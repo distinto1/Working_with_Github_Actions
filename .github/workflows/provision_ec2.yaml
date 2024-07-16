@@ -44,10 +44,14 @@ jobs:
           terraform validate
           terraform plan
           terraform apply -auto-approve
-
-      - name: Set Terraform output
-        id: tf_output
-        run: echo "output_value=$(terraform output -raw my_output)" >> $GITHUB_ENV
+      - name: Check Terraform output
+        id: tf_output_check
+        run: |
+          output=$(terraform output -raw my_output || echo "No outputs found")
+          if [ "$output" != "No outputs found" ]; then
+            echo "output_value=$output" >> $GITHUB_ENV
+          fi
 
       - name: Use Terraform output
+        if: env.output_value
         run: echo "The Terraform output value is ${{ env.output_value }}"
